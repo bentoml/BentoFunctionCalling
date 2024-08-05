@@ -146,12 +146,10 @@ class ExchangeAssistant:
                         "content": function_response,
                     }
                 )
-            print(messages)
             final_response = self.client.chat.completions.create(
                 model=MODEL_ID,
                 messages=messages,
             )
-            print(final_response)
             return final_response.choices[0].message.content
         else:
             return "Unable to use the available tools."

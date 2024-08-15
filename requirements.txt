@@ -1,6 +1,4 @@
-
-accelerate==0.33.0
+autoawq==0.2.5
 bentoml>=1.3.0
 fastapi==0.111.1
-openai==1.37.0
-vllm==0.5.3.post1; sys_platform == "linux"
+lmdeploy==0.5.2.post1

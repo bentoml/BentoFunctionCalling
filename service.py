@@ -1,17 +1,14 @@
-import uuid
-import json
-from typing import AsyncGenerator, Optional
-
 import bentoml
-from annotated_types import Ge, Le
-from typing_extensions import Annotated
+import json
 
-from bentovllm_openai.utils import openai_endpoints
+from openai_endpoints import openai_api_app
+
+from utils import _make_httpx_client
 from openai import OpenAI
 
 
 MAX_TOKENS = 1024
-SYSTEM_PROMPT = "You are a helpful assistant that can access external functions. The responses from these function calls will be appended to this dialogue. Please provide responses based on the information from these function calls."
+SYSTEM_PROMPT = "You are a helpful assistant that can access external functions. The responses from these function calls will be appended to this dialogue. Please provide responses only based on the results from these function calls. The results will be specified in the 'converted_amount' field. The source and target currencies will be specified in  the 'from_currency' and 'to_currency' respectively."
 PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 {system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
@@ -22,15 +19,11 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 MODEL_ID = "hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4"
 
-@openai_endpoints(
-    model_id=MODEL_ID,
-    default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
-)
+
+@bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    name="bentovllm-llama3.1-70b-insruct-awq-service",
     traffic={
-        "timeout": 1200,
-        "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
+        "timeout": 300,
     },
     resources={
         "gpu": 1,
@@ -41,47 +34,27 @@ class Llama:
 
     def __init__(self) -> None:
         from transformers import AutoTokenizer
-        from vllm import AsyncEngineArgs, AsyncLLMEngine
+        from lmdeploy.serve.async_engine import AsyncEngine
+        from lmdeploy.messages import TurbomindEngineConfig
 
-        ENGINE_ARGS = AsyncEngineArgs(
-            model=MODEL_ID,
-            max_model_len=MAX_TOKENS,
-            quantization="AWQ",
+        engine_config = TurbomindEngineConfig(
+            model_name=MODEL_ID,
+            model_format="awq",
+            cache_max_entry_count=0.85,
             enable_prefix_caching=True,
         )
+        self.engine = AsyncEngine(MODEL_ID, backend_config=engine_config)
 
-        self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
+        import lmdeploy.serve.openai.api_server as lmdeploy_api_sever
+        lmdeploy_api_sever.VariableInterface.async_engine = self.engine
 
         tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-        self.stop_token_ids = [
-            tokenizer.eos_token_id,
-            tokenizer.convert_tokens_to_ids("<|eot_id|>"),
+        self.stop_tokens = [
+            tokenizer.convert_ids_to_tokens(
+                tokenizer.eos_token_id,
+            ),
+            "<|eot_id|>",
         ]
-
-    @bentoml.api
-    async def generate(
-        self,
-        prompt: str = "Explain superconductors in plain English",
-        system_prompt: Optional[str] = SYSTEM_PROMPT,
-        max_tokens: Annotated[int, Ge(128), Le(MAX_TOKENS)] = MAX_TOKENS,
-    ) -> AsyncGenerator[str, None]:
-        from vllm import SamplingParams
-
-        SAMPLING_PARAM = SamplingParams(
-            max_tokens=max_tokens,
-            stop_token_ids=self.stop_token_ids,
-        )
-
-        if system_prompt is None:
-            system_prompt = SYSTEM_PROMPT
-        prompt = PROMPT_TEMPLATE.format(user_prompt=prompt, system_prompt=system_prompt)
-        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)
 
 
 @bentoml.service(resources={"cpu": "1"})
@@ -89,11 +62,16 @@ class ExchangeAssistant:
     llm = bentoml.depends(Llama)
     
     def __init__(self):
-        self.client = OpenAI(base_url=f"{Llama.url}/v1", api_key="API_TOKEN_NOT_NEEDED")
+        httpx_client, base_url = _make_httpx_client(url=Llama.url, svc=Llama)
+        self.client = OpenAI(
+            base_url=f"{base_url}/v1",
+            http_client=httpx_client,
+            api_key="API_TOKEN_NOT_NEEDED"
+        )
 
     def convert_currency(self, from_currency: str = "USD", to_currency: str = "CAD", amount: float = 1) -> float:
         exchange_rate = 3.14159 # Replace with actual exchange rate API
-        return json.dumps({"converted_amount": round(float(amount) * exchange_rate, 2)})
+        return json.dumps({"from_currency": from_currency, "to_currency": to_currency, "converted_amount": round(float(amount) * exchange_rate, 2)})
     
     @bentoml.api
     def exchange(self, query: str = "I want to exchange 42 US dollars to Canadian dollars") -> str:

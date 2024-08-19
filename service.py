@@ -62,10 +62,18 @@ class ExchangeAssistant:
     llm = bentoml.depends(Llama)
     
     def __init__(self):
-        httpx_client, base_url = _make_httpx_client(url=Llama.url, svc=Llama)
+        from urllib.parse import urlparse
+
+        base_url = ""
+        parsed = urlparse(Llama.url)
+        if parsed.scheme == "file":
+            base_url = "http://127.0.0.1:3000"
+        elif parsed.scheme == "tcp":
+            base_url = f"http://{parsed.netloc}"
+
         self.client = OpenAI(
             base_url=f"{base_url}/v1",
-            http_client=httpx_client,
+            http_client=self.llm._sync.client,
             api_key="API_TOKEN_NOT_NEEDED"
         )
 

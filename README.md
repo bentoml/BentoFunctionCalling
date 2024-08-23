@@ -37,7 +37,7 @@ This application sincludes two services: an Exchange Assistant API and an LLM.
 
 ## Prerequisites
 
-If you want to test the Service locally, you need a Nvidia GPU with sufficient VRAM to run the LLM. The included Llama 8B requires 24GB of VRAM to run.
+If you want to test the Service locally, you need a Nvidia GPU with sufficient VRAM to run the LLM. The included LLM Llama 3.1 70B Instruct AWQ in INT4 requires around 80 GB of VRAM. You can also choose another LLM as needed.
 
 ## Install dependencies
 

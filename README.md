@@ -1,6 +1,8 @@
-# BentoFunctionCalling
+<div align="center">
+    <h1 align="center">Building LLM function calling capabilities with BentoML</h1>
+</div>
 
-This example project demonstrate how to build LLM function calling capabilities with [BentoML](https://github.com/bentoml/BentoML).
+This example project demonstrates how to build LLM function calling capabilities with [BentoML](https://github.com/bentoml/BentoML). See [here](https://github.com/bentoml/BentoML/tree/main/examples) for a full list of BentoML example projects.
 
 LLM function calling refers to the capability of LLMs to interact with user defined functions or APIs through natural language prompts. This allows the model to execute specific tasks, retrieve real-time data, or perform calculations beyond its trained knowledge. By calling functions, the LLM can extend its utility, enabling it to provide more accurate and dynamic responses by integrating external resources or executing code in real-time.
 
@@ -25,7 +27,7 @@ This application includes two services, an exchange assitant API and an LLM. The
 
 This application sincludes two services: an Exchange Assistant API and an LLM.
 
-![bentofunctioncalling](https://github.com/user-attachments/assets/1fb1c5b6-35a0-45d6-8ed8-c3c738b9e7b9)
+![bentofunctioncalling](./function-calling-diagram.png)
 
 - Query Interpretation: When a user submits a query, the Exchange Assistant API forwards it and prompt the LLM to determine the function name and extract parameters.
 
@@ -35,8 +37,7 @@ This application sincludes two services: an Exchange Assistant API and an LLM.
 
 ## Prerequisites
 
-- You have installed Python 3.8+ and `pip`. See the [Python downloads page](https://www.python.org/downloads/) to learn more.
-- You have a basic understanding of key concepts in BentoML, such as Services.
+- Python 3.11 is recommended for this example.
 - If you want to test the Service locally, you need a Nvidia GPU with sufficient VRAM to run the LLM. The included Llama 8B requires 24GB of VRAM to run.
 
 ## Install dependencies

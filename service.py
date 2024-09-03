@@ -3,7 +3,6 @@ import json
 
 from openai_endpoints import openai_api_app
 
-from utils import _make_httpx_client
 from openai import OpenAI
 
 
@@ -62,10 +61,9 @@ class ExchangeAssistant:
     llm = bentoml.depends(Llama)
     
     def __init__(self):
-        httpx_client, base_url = _make_httpx_client(url=Llama.url, svc=Llama)
         self.client = OpenAI(
-            base_url=f"{base_url}/v1",
-            http_client=httpx_client,
+            base_url=f"{self.llm.client_url}/v1",
+            http_client=self.llm.to_sync.client,
             api_key="API_TOKEN_NOT_NEEDED"
         )
 

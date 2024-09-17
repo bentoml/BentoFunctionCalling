@@ -128,4 +128,4 @@ class ExchangeAssistant:
             )
             return final_response.choices[0].message.content
         else:
-            return "Unable to use the available tools."
+            return response_message.content

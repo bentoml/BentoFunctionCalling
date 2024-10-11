@@ -1,11 +1,11 @@
-service: 'service:ExchangeAssistant'
+service: "service:ExchangeAssistant"
 labels:
   owner: bentoml-team
   stage: demo
 include:
-  - '*.py'
+  - "*.py"
 python:
-  requirements_txt: './requirements.txt'
+  requirements_txt: "./requirements.txt"
   lock_packages: false
 docker:
-  python_version: 3.11
+  python_version: "3.11"

@@ -2,7 +2,7 @@
     <h1 align="center">LLM Function Calling with BentoML</h1>
 </div>
 
-This example project demonstrates how to build LLM function calling capabilities with [BentoML](https://github.com/bentoml/BentoML). See [here](https://github.com/bentoml/BentoML/tree/main/examples) for a full list of BentoML example projects.
+This example project demonstrates how to build LLM function calling capabilities with [BentoML](https://github.com/bentoml/BentoML). See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 LLM function calling refers to the capability of LLMs to interact with user defined functions or APIs through natural language prompts. This allows the model to execute specific tasks, retrieve real-time data, or perform calculations beyond its trained knowledge. By calling functions, the LLM can extend its utility, enabling it to provide more accurate and dynamic responses by integrating external resources or executing code in real-time.
 

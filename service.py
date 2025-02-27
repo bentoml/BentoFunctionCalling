@@ -18,9 +18,13 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 MODEL_ID = "hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4"
 
+runtime_image = bentoml.images.PythonImage(python_version="3.11")\
+                              .requirements_file("requirements.txt")
+
 
 @bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
+    image=runtime_image,
     traffic={
         "timeout": 300,
     },
@@ -31,10 +35,13 @@ MODEL_ID = "hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4"
 )
 class Llama:
 
+    hf_model = bentoml.models.HuggingFaceModel(MODEL_ID)
+
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from lmdeploy.serve.async_engine import AsyncEngine
         from lmdeploy.messages import TurbomindEngineConfig
+        from lmdeploy import ChatTemplateConfig
 
         engine_config = TurbomindEngineConfig(
             model_name=MODEL_ID,
@@ -42,7 +49,12 @@ class Llama:
             cache_max_entry_count=0.85,
             enable_prefix_caching=True,
         )
-        self.engine = AsyncEngine(MODEL_ID, backend_config=engine_config)
+        self.engine = AsyncEngine(
+            self.hf_model,
+            backend_config=engine_config,
+            model_name=MODEL_ID,
+            chat_template_config=ChatTemplateConfig("llama3_1"),
+        )
 
         import lmdeploy.serve.openai.api_server as lmdeploy_api_sever
         lmdeploy_api_sever.VariableInterface.async_engine = self.engine
@@ -56,7 +68,10 @@ class Llama:
         ]
 
 
-@bentoml.service(resources={"cpu": "1"})
+@bentoml.service(
+    image=runtime_image,
+    resources={"cpu": "1"}
+)
 class ExchangeAssistant:
     llm = bentoml.depends(Llama)
     

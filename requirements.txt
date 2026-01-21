@@ -1,4 +1,4 @@
 bentoml>=1.4.1
 fastapi==0.115.8
-lmdeploy==0.7.1
+lmdeploy==0.11.1
 openai==1.64.0

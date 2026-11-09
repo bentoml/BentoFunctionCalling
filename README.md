@@ -2,7 +2,7 @@
     <h1 align="center">LLM Function Calling with BentoML</h1>
 </div>
 
-This example project demonstrates how to build LLM function calling capabilities with [BentoML](https://github.com/bentoml/BentoML). See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
+This example project demonstrates how to build LLM function calling capabilities with [BentoML](https://github.com/bentoml/BentoML).
 
 LLM function calling refers to the capability of LLMs to interact with user defined functions or APIs through natural language prompts. This allows the model to execute specific tasks, retrieve real-time data, or perform calculations beyond its trained knowledge. By calling functions, the LLM can extend its utility, enabling it to provide more accurate and dynamic responses by integrating external resources or executing code in real-time.
 
@@ -69,15 +69,3 @@ curl -X 'POST' \
   "query": "I want to exchange 42 US dollars to Canadian dollars"
 }'
 ```
-
-## Deploy to BentoCloud
-
-After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
-
-Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), then run the following command to deploy it.
-
-```bash
-bentoml deploy .
-```
-
-Once the application is up and running on BentoCloud, you can access it via the exposed URL.
